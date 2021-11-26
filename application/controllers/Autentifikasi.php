@@ -2,6 +2,15 @@
 
 class Autentifikasi extends CI_Controller
 {
+	public function blok()
+	{
+		$this->load->view('autentifikasi/blok');
+	}
+
+	public function gagal()
+	{
+		$this->load->view('autentifikasi/gagal');
+	}
 	public function index()
 	{
 		if ($this->session->userdata('email')) {
@@ -28,14 +37,14 @@ class Autentifikasi extends CI_Controller
 		$user = $this->ModelUser->cekData(['email' => $email])->row_array();
 			
 		if ($user) {
-			if ($user['is_active'] == 1) {
+			if ($user['is_active'] == 2) {
 				if (password_verify($password, $user['password'])){
 					$data = [
 						'email' => $user['email'],
 						'role_id' => $user['role_id']];
 					$this->session->set_userdata($data); 
 					
-					if ($user['role_id'] == 1) {
+					if ($user['role_id'] == 2) {
 						redirect('admin');
 					} else {
 						if ($user['image'] == 'default.jpg') {
@@ -57,20 +66,11 @@ class Autentifikasi extends CI_Controller
 		}
 	}
 
-	public function blok()
-	{
-		$this->load->view('autentifikasi/blok');
-	}
-
-	public function gagal()
-	{
-		$this->load->view('autentifikasi/gagal');
-	}
 	public function registrasi()
 	{
 		if ($this->session->userdata('email')) {
 		redirect('user');
-	}
+	
 		//membuat rule untuk inputan nama agar tidak boleh kosong dengan membuat pesan error dengan 
 		//bahasa sendiri yaitu 'Nama Belum diisi'
 		$this->form_validation->set_rules('nama', 'Nama Lengkap', 'required', ['required' => 'Nama Belum diis!!']);
@@ -86,15 +86,15 @@ class Autentifikasi extends CI_Controller
 		 //'Password Tidak Sama'. jika password diisi kurang dari 3 digit, maka pesannya adalah 
 		 //'Password Terlalu Pendek'.
 		$this->form_validation->set_rules('password1', 'Password', 'required|trim|min_length[3]|matches[password2]', ['matches' => 'Password Tidak Sama!!','min_length' => 'Password Terlalu Pendek']);
-		$this->form_validation->set_rules('password2', 'Repeat Password', 'required|trim|matches[password1]');
+		$this->form_validation->set_rules('password2', 'Repeat Password', 'required|trim|matches[password1]');}
 		//jika jida disubmit kemudian validasi form diatas tidak berjalan, maka akan tetap berada di
 		//tampilan registrasi. tapi jika disubmit kemudian validasi form diatas berjalan, maka data yang 
 		//diinput akan disimpan ke dalam tabel user
 		if ($this->form_validation->run() == false) {
-			$data['judul'] = 'Registrasi Member';
-			$this->load->view('templates/aute_header', $data);
-			$this->load->view('autentifikasi/registrasi');
-			$this->load->view('templates/aute_footer');
+				$data['judul'] = 'Registrasi Member';
+				$this->load->view('templates/aute_header', $data);
+				$this->load->view('autentifikasi/registrasi');
+				$this->load->view('templates/aute_footer');
 		} else {
 			$email = $this->input->post('email', true);
 			$data = ['nama' => htmlspecialchars($this->input->post('nama', true)),
@@ -102,13 +102,12 @@ class Autentifikasi extends CI_Controller
 				 	'image' => 'default.jpg',
 				 	'password' => password_hash($this->input->post('password1'), PASSWORD_DEFAULT),
 				 	'role_id' => 2,
-				 	'is_active' => 0,
+				 	'is_active' => 2,
 				 	'tanggal_input' => time()];
 
 		$this->ModelUser->simpanData($data); //menggunakan model
 		 
 		$this->session->set_flashdata('pesan', '<div class="alert alert-success alert-message" role="alert">Selamat!! akun member anda sudah dibuat. Silahkan Aktivasi Akun anda</div>');
-		redirect('autentifikasi');
-	 }
-
+			redirect('autentifikasi'); } 
+	}	
 }	
